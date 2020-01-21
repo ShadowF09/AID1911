@@ -4,10 +4,11 @@ import signal
 from dict_database import *
 
 ADDR='0.0.0.0'
-POST=8888
+POST=8800
 s=socket()
 s.bind((ADDR,POST))
 signal.signal(signal.SIGCHLD,signal.SIG_IGN)
+s.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
 s.listen(3)
 
 def handle(c,addr):
@@ -15,8 +16,10 @@ def handle(c,addr):
     tmp=data.split(' ',2)
     if tmp[0]=='R':
         n=tmp[1]
+        p=tmp[2]
         d=Database()
-        d.db_rigster(n)
+        result=d.db_rigster(n,p)
+        c.send(result.encode())
     elif tmp[0]=='L':
         pass
     elif tmp[0]=='Q':
@@ -31,6 +34,7 @@ def main():
         print('conncet from:',addr)
         p=Process(target=handle,args=(c,addr))
         p.daemon
+        print(1)
         p.start()
 
 
